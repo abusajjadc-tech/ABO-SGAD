@@ -229,7 +229,6 @@
             }
         }
 
-        // ضغط الصورة وتحويلها لرابط طويل Base64 لتقليل استهلاك الذاكرة
         function compressImageToBase64(file) {
             return new Promise((resolve) => {
                 const reader = new FileReader();
@@ -322,11 +321,16 @@
             if(fileInput.files.length === 0) return alert("اختر صورة");
 
             document.getElementById('banner-status').innerText = "جاري الرفع...";
-            const imgUrl = await compressImageToBase64(fileInput.files[0]);
-            db.ref('banners').push({ title: title, image: imgUrl });
-            document.getElementById('banner-status').innerText = "✅ تم";
-            document.getElementById('banner-status').style.color = "green";
-            fileInput.value = ""; document.getElementById('banner-title').value = "";
+            try {
+                const imgUrl = await compressImageToBase64(fileInput.files[0]);
+                await db.ref('banners').push({ title: title, image: imgUrl });
+                document.getElementById('banner-status').innerText = "✅ تم";
+                document.getElementById('banner-status').style.color = "green";
+                fileInput.value = ""; document.getElementById('banner-title').value = "";
+            } catch (error) {
+                document.getElementById('banner-status').innerText = "❌ فشل الرفع";
+                alert("تم رفض الإذن. يرجى الذهاب إلى Firebase -> Realtime Database -> Rules وتغيير false إلى true");
+            }
         }
 
         function deleteBanner(key) {
@@ -365,11 +369,16 @@
             if(!name || fileInput.files.length === 0) return alert("البيانات ناقصة");
 
             document.getElementById('cat-status').innerText = "جاري...";
-            const imgUrl = await compressImageToBase64(fileInput.files[0]);
-            const catId = name.replace(/\s+/g, '_'); 
-            db.ref('categories').push({ name: name, image: imgUrl, id: catId });
-            document.getElementById('cat-status').innerText = "✅ تم";
-            fileInput.value = ""; document.getElementById('cat-name-new').value = "";
+            try {
+                const imgUrl = await compressImageToBase64(fileInput.files[0]);
+                const catId = name.replace(/\s+/g, '_'); 
+                await db.ref('categories').push({ name: name, image: imgUrl, id: catId });
+                document.getElementById('cat-status').innerText = "✅ تم";
+                fileInput.value = ""; document.getElementById('cat-name-new').value = "";
+            } catch (error) {
+                document.getElementById('cat-status').innerText = "❌ فشل";
+                alert("تم رفض الإذن. يرجى الذهاب إلى Firebase -> Realtime Database -> Rules وتغيير false إلى true");
+            }
         }
 
         function deleteCategory(key) {
@@ -409,14 +418,19 @@
             if(!name || !price || fileInput.files.length === 0) return alert("البيانات ناقصة");
 
             document.getElementById('prod-status').innerText = "جاري الرفع...";
-            const imgUrl = await compressImageToBase64(fileInput.files[0]);
-            await db.ref('products').push({
-                title: name, price: Number(price), description: desc, category: cat,
-                image: imgUrl, date: firebase.database.ServerValue.TIMESTAMP
-            });
-            document.getElementById('prod-status').innerText = "✅ تم النشر";
-            document.getElementById('p-name').value = ""; document.getElementById('p-price').value = "";
-            document.getElementById('p-desc').value = ""; document.getElementById('p-img').value = "";
+            try {
+                const imgUrl = await compressImageToBase64(fileInput.files[0]);
+                await db.ref('products').push({
+                    title: name, price: Number(price), description: desc, category: cat,
+                    image: imgUrl, date: firebase.database.ServerValue.TIMESTAMP
+                });
+                document.getElementById('prod-status').innerText = "✅ تم النشر";
+                document.getElementById('p-name').value = ""; document.getElementById('p-price').value = "";
+                document.getElementById('p-desc').value = ""; document.getElementById('p-img').value = "";
+            } catch (error) {
+                document.getElementById('prod-status').innerText = "❌ فشل الرفع";
+                alert("تم رفض الإذن. يرجى الذهاب إلى Firebase -> Realtime Database -> Rules وتغيير false إلى true");
+            }
         }
 
         function deleteProduct(key) {
