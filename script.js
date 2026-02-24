@@ -1,19 +1,17 @@
-// متغيرات عامة
 let cart = [];
 let user = null;
 let deferredPrompt;
-let adminPhoneNumber = ""; 
-let sliderInterval; // متغير لحفظ توقيت السلايدر
+let adminPhoneNumber = "07716165154"; 
+let sliderInterval; 
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDX0esBRiQ4MuyvWH_s2UZ2kJpA9GryDgE",
-    authDomain: "tttttt-48c2e.firebaseapp.com",
-    databaseURL: "https://tttttt-48c2e-default-rtdb.firebaseio.com",
-    projectId: "tttttt-48c2e",
-    storageBucket: "tttttt-48c2e.firebasestorage.app",
-    messagingSenderId: "982883301644",
-    appId: "1:982883301644:web:7b1676215cb4f0fe7c7129",
-    measurementId: "G-QLCYC16T20"
+    apiKey: "AIzaSyAxR_CGmGTkbZQrFNpu69HXUlhEM-vFjl8",
+    authDomain: "fgrt-dcc69.firebaseapp.com",
+    databaseURL: "https://fgrt-dcc69-default-rtdb.firebaseio.com",
+    projectId: "fgrt-dcc69",
+    storageBucket: "fgrt-dcc69.firebasestorage.app",
+    messagingSenderId: "392713801073",
+    appId: "1:392713801073:web:6a8d7a628523e6dad07ad0"
 };
 
 firebase.initializeApp(firebaseConfig);
@@ -21,26 +19,6 @@ const db = firebase.database();
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // 1. جلب إعدادات المتجر (الاسم + واتساب) وتحديثها فوراً
-    db.ref('settings').on('value', snapshot => {
-        const s = snapshot.val();
-        if(s) {
-            // تحديث اسم المتجر
-            if(s.storeName) {
-                const formattedName = `<span class="store-text" style="color:#fff">${s.storeName.charAt(0)}</span>${s.storeName.substring(1)}`;
-                const headerDisplay = document.getElementById('store-name-display');
-                if(headerDisplay) headerDisplay.innerHTML = formattedName;
-                const splashTitle = document.getElementById('splash-title');
-                if(splashTitle) splashTitle.innerText = s.storeName;
-            }
-            // تحديث رقم الواتساب
-            if(s.whatsapp) {
-                adminPhoneNumber = s.whatsapp;
-            }
-        }
-    });
-
-    // 2. جلب الفئات
     db.ref('categories').on('value', snapshot => {
         const catContainer = document.getElementById('dynamic-categories');
         const data = snapshot.val();
@@ -57,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 3. جلب البنرات وعمل حركة تلقائية (Silder)
     db.ref('banners').on('value', snapshot => {
         const slider = document.getElementById('dynamic-slider');
         const data = snapshot.val();
@@ -71,7 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 slider.innerHTML += `<img src="${b.image}" alt="${b.title || 'Offer'}">`;
             });
 
-            // كود الحركة التلقائية
             let currentIndex = 0;
             const totalSlides = banners.length;
 
@@ -79,14 +55,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 sliderInterval = setInterval(() => {
                     currentIndex = (currentIndex + 1) % totalSlides;
                     slider.style.transform = `translateX(-${currentIndex * 100}%)`;
-                }, 3000); // يتحرك كل 3 ثواني
+                }, 3000); 
             }
         } else {
             slider.innerHTML = '<img src="https://via.placeholder.com/800x450?text=Welcome" style="width:100%; height:100%; object-fit:cover">';
         }
     });
 
-    // إخفاء شاشة التحميل
     setTimeout(() => {
         const splash = document.getElementById('splash-screen');
         splash.style.opacity = '0';
@@ -94,14 +69,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if(!localStorage.getItem('visited')) { showPage('login-page'); localStorage.setItem('visited', 'true'); }
     }, 2000);
 
-    // PWA Logic
-    window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; document.getElementById('install-banner').style.display = 'flex'; });
-    document.getElementById('install-btn').addEventListener('click', async () => {
-        if(deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; document.getElementById('install-banner').style.display = 'none'; }
+    window.addEventListener('beforeinstallprompt', (e) => { 
+        e.preventDefault(); 
+        deferredPrompt = e; 
+        document.getElementById('install-banner').style.display = 'flex'; 
     });
-    document.getElementById('close-install').addEventListener('click', () => document.getElementById('install-banner').style.display = 'none');
     
-    // جلب المنتجات
+    document.getElementById('install-btn').addEventListener('click', async () => {
+        if(deferredPrompt) { 
+            deferredPrompt.prompt(); 
+            deferredPrompt = null; 
+            document.getElementById('install-banner').style.display = 'none'; 
+        }
+    });
+    
+    document.getElementById('close-install').addEventListener('click', () => {
+        document.getElementById('install-banner').style.display = 'none';
+    });
+    
     db.ref('products').on('value', (snapshot) => {
         const container = document.getElementById('products-container');
         container.innerHTML = "";
@@ -128,7 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// التنقل والصفحات
 window.showPage = function(pageId) {
     document.querySelectorAll('.page').forEach(page => page.classList.remove('active-page'));
     document.getElementById(pageId).classList.add('active-page');
@@ -140,7 +124,6 @@ window.showPage = function(pageId) {
 }
 window.goBack = function() { showPage('home-page'); }
 
-// التفاصيل والسلة
 window.openProductPage = function(id, title, price, img, desc) {
     document.getElementById('detail-title').innerText = title;
     document.getElementById('detail-price').innerText = Number(price).toLocaleString() + " د.ع";
@@ -176,7 +159,6 @@ function updateCartUI() {
 window.removeFromCart = function(index) { cart.splice(index, 1); updateCartUI(); }
 window.clearCart = function() { cart = []; updateCartUI(); }
 
-// إرسال الطلب
 window.processCheckout = function() {
     if(cart.length === 0) return showToast("السلة فارغة!");
     const name = document.getElementById('order-name').value;
@@ -195,7 +177,6 @@ window.processCheckout = function() {
     });
 }
 
-// جوجل والبروفايل
 window.handleGoogleLogin = function() {
     showToast("جاري الاتصال...");
     setTimeout(() => { user = { name: "مستخدم", email: "user@gmail.com", avatar: "https://via.placeholder.com/80" }; updateProfileUI(); showPage('home-page'); }, 1500);
@@ -216,13 +197,11 @@ function showToast(msg) {
     toast.innerText = msg; toast.classList.add('show-toast');
     setTimeout(() => toast.classList.remove('show-toast'), 2000);
 }
-// القوائم
 window.toggleSidebar = function() { document.getElementById('sidebar').classList.toggle('active'); document.getElementById('sidebar-overlay').classList.toggle('active'); }
 document.getElementById('menu-btn').addEventListener('click', toggleSidebar);
 document.getElementById('close-sidebar').addEventListener('click', toggleSidebar);
 document.getElementById('sidebar-overlay').addEventListener('click', toggleSidebar);
 
-// الفلترة
 window.filterProducts = function(cat) {
     const cards = document.querySelectorAll('.product-card');
     document.querySelectorAll('.cat-box').forEach(b => b.classList.remove('active'));
@@ -232,4 +211,3 @@ window.filterProducts = function(cat) {
         else card.style.display = 'none';
     });
 }
-
