@@ -16,6 +16,8 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
+const auth = firebase.auth();
+const provider = new firebase.auth.GoogleAuthProvider();
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -179,8 +181,32 @@ window.processCheckout = function() {
 
 window.handleGoogleLogin = function() {
     showToast("جاري الاتصال...");
-    setTimeout(() => { user = { name: "مستخدم", email: "user@gmail.com", avatar: "https://via.placeholder.com/80" }; updateProfileUI(); showPage('home-page'); }, 1500);
+    auth.signInWithPopup(provider)
+    .then((result) => {
+        user = { 
+            name: result.user.displayName, 
+            email: result.user.email, 
+            avatar: result.user.photoURL 
+        }; 
+        updateProfileUI(); 
+        showPage('home-page'); 
+    })
+    .catch((error) => {
+        showToast("حدث خطأ أثناء تسجيل الدخول");
+    });
 }
+
+auth.onAuthStateChanged((loggedInUser) => {
+    if (loggedInUser) {
+        user = {
+            name: loggedInUser.displayName,
+            email: loggedInUser.email,
+            avatar: loggedInUser.photoURL
+        };
+        updateProfileUI();
+    }
+});
+
 function updateProfileUI() {
     if(user) {
         document.getElementById('profile-name').innerText = user.name;
