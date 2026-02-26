@@ -1,7 +1,7 @@
 let cart = [];
 let user = null;
 let deferredPrompt;
-let adminPhoneNumber = "07716165154"; 
+let adminPhoneNumber = "7716165154"; 
 let sliderInterval; 
 
 const firebaseConfig = {
